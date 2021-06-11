@@ -1,0 +1,42 @@
+---
+kind: pipeline
+type: docker
+name: build
+
+steps:
+  - name: docker
+    image: docker:stable-dind
+    privileged: true
+    detach: true
+    command: [ "dockerd", "--host=tcp://0.0.0.0:2375" ]
+
+  - name: version
+    image: alpine:3.13
+    commands:
+    - apk add --update --no-cache curl jq
+    - LATEST=$(curl -s https://api.github.com/repos/kiwiirc/kiwibnc/commits | jq -r '.[0].sha' | cut -c1-7)
+    - if curl -sfL https://hub.docker.com/v2/repositories/ezkrg/kiwibnc/tags/$LATEST > /dev/null; then echo "tag $LATEST already exist"; exit 78; fi
+    - echo -n "$LATEST" > .tag
+
+  - name: build
+    image: ezkrg/buildx:latest
+    environment:
+      USER:
+        from_secret: DHU
+      PASSWORD:
+        from_secret: DHP
+      DOCKER_HOST: tcp://docker:2375
+    commands:
+    - sleep 5
+    - TAG=$(cat .tag)
+    - docker buildx create --use --name docker --node docker --platform linux/amd64 --driver docker-container $DOCKER_HOST
+    - echo $PASSWORD | docker login --username $USER --password-stdin
+    - docker buildx build --load --cache-from ezkrg/cache:kiwibnc --cache-to ezkrg/cache:kiwibnc -t ezkrg/kiwibnc:$TAG --build-arg VERSION=$TAG .
+    - docker push ezkrg/kiwibnc:$TAG
+    - docker tag ezkrg/kiwibnc:$TAG ezkrg/kiwibnc:latest
+    - docker push ezkrg/kiwibnc:latest
+---
+kind: signature
+hmac: f897ccc70a516b1aefb84204192cc56905b3c519b35c2edd214c180420eebb00
+
+...
