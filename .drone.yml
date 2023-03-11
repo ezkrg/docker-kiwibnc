@@ -5,7 +5,7 @@ name: build
 
 steps:
   - name: docker
-    image: docker:stable-dind
+    image: docker:dind
     privileged: true
     detach: true
     command: [ "dockerd", "--host=tcp://0.0.0.0:2375" ]
@@ -37,6 +37,6 @@ steps:
     - docker push ezkrg/kiwibnc:latest
 ---
 kind: signature
-hmac: f897ccc70a516b1aefb84204192cc56905b3c519b35c2edd214c180420eebb00
+hmac: c04e6f9e697cfe6e8cdf3e4729c60e5f2108299ba8c6fbe451695bfd2f4334d9
 
 ...
