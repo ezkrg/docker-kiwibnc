@@ -27,7 +27,7 @@ steps:
         from_secret: DHP
       DOCKER_HOST: tcp://docker:2375
     commands:
-    - sleep 5
+    - while ! docker info; do sleep 1; done
     - TAG=$(cat .tag)
     - docker buildx create --use --name docker --node docker --platform linux/amd64 --driver docker-container $DOCKER_HOST
     - echo $PASSWORD | docker login --username $USER --password-stdin
@@ -37,6 +37,6 @@ steps:
     - docker push ezkrg/kiwibnc:latest
 ---
 kind: signature
-hmac: c04e6f9e697cfe6e8cdf3e4729c60e5f2108299ba8c6fbe451695bfd2f4334d9
+hmac: 7624abd215587b11b0e5f49687092223cc20307aa2c2deb0c724038a2782b4ef
 
 ...
