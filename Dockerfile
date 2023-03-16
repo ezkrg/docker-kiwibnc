@@ -3,7 +3,6 @@ FROM node:lts-alpine AS builder
 ARG VERSION
 
 RUN apk add --update --no-cache build-base \
-    python2 \
     python3 \
     git \
  && cd /tmp \
